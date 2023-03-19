@@ -49,17 +49,43 @@ class MainWindow(QWidget):
         # Validar la ecuación diferencial
         if grado == 'Primer grado':
             # Aquí podrías implementar la validación para una ecuación diferencial de primer grado
-            print('Validación para ecuación de primer grado')
+            x = symbols('x')
+            y = Function('y')(x)
+            ecuacion_diff = Eq(y.diff(x), sympify(ecuacion))
+            
+            # Validación de la ecuación
+            if ecuacion_diff.lhs != Derivative(y, x):
+                self.label3.setText("Error: la ecuación ingresada no es de primer grado.")
+                #exit()
+            else:
+                self.label3.setText("Ecuacion correcta")
 
         elif grado == 'Segundo grado':
             # Aquí podrías implementar la validación para una ecuación diferencial de segundo grado
-            print('Validación para ecuación de segundo grado')
+            x = symbols('x')
+            y = Function('y')(x)
+            ecuacion_diff = Eq(y.diff(x, 2), sympify(ecuacion))
+            
+            # Validación de la ecuación
+            if ecuacion_diff.lhs != Derivative(y, x, 2):
+                self.label3.setText("Error: la ecuación ingresada no es de segundo grado.")
+                #exit()
+            else:
+                self.label3.setText("Ecuacion correcta")
 
         elif grado == 'Tercer grado':
             # Aquí podrías implementar la validación para una ecuación diferencial de tercer grado
-            print('Validación para ecuación de tercer grado')
-        
-        # Conectar la señal del cambio de texto en la entrada con la función actualizar_ecuacion
+            x = symbols('x')
+            y = Function('y')(x)
+            ecuacion_diff = Eq(y.diff(x, 3), sympify(ecuacion))
+            
+            # Validación de la ecuación
+            if ecuacion_diff.lhs != Derivative(y, x, 3):
+                self.label3.setText("Error: la ecuación ingresada no es de tercer grado.")
+                #exit()
+            else:
+                self.label3.setText("Ecuacion correcta")
+                
         
     def actualizar_ecuacion(self):
         # Obtener el texto de la entrada
