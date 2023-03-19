@@ -1,4 +1,4 @@
-# require
+# requiere 
 ```bash
 pip install --upgrade sip
 pip install pyqt5
