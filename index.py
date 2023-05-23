@@ -1,99 +1,129 @@
-from PyQt5.QtWidgets import QApplication, QPushButton, QHBoxLayout, QWidget, QLabel, QLineEdit, QVBoxLayout, QComboBox
-from sympy import *
-from sympy.abc import x, y
-import re
+from PyQt5.QtWidgets import QApplication, QPushButton, QHBoxLayout, QWidget, QLabel, QLineEdit, QVBoxLayout, QComboBox, QStackedWidget
+from PyQt5.QtGui import QColor
+from PyQt5 import QtCore
+import webbrowser
 
 class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle('Ecuaciones Diferenciales')
-        self.setGeometry(100, 100, 400, 200)
+        self.setWindowTitle("JEdyCalc")
+        self.setStyleSheet("background-color: #FFFBFA;")
+        self.layout = QVBoxLayout()
+
+        # Botones superiores
+        buttons_layout = QHBoxLayout()
+        self.info_button = QPushButton("Información")
+        self.info_button.setStyleSheet("background-color: #00BD9D; color: white;")
+        self.tutorial_button = QPushButton("Tutorial")
+        self.tutorial_button.setStyleSheet("background-color: #00BD9D; color: white;")
+        self.credits_button = QPushButton("Créditos")
+        self.credits_button.setStyleSheet("background-color: #00BD9D; color: white;")
+
+        buttons_layout.addWidget(self.credits_button)
+        buttons_layout.addWidget(self.tutorial_button)
+        buttons_layout.addWidget(self.info_button)
+
+        self.layout.addLayout(buttons_layout)
+
+        # Título
+        self.title_label = QLabel("JEdyCalc")
+        self.title_label.setStyleSheet("color: #BF1363; font-size: 24px; font-weight: bold;")
+        self.layout.addWidget(self.title_label, alignment=QtCore.Qt.AlignCenter)
+
+        # Input
+        self.input_line_edit = QLineEdit()
+        self.input_line_edit.setStyleSheet("background-color: white; border: 1px solid #ccc; padding: 5px; box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);")
+        #self.input_line_edit.setStyleSheet("QLineEdit { background-color: white; border: 1px solid #ccc; padding: 5px; box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1); }")
+        self.layout.addWidget(self.input_line_edit)
+
+        # Selector
+        self.selector_combobox = QComboBox()
+        self.selector_combobox.addItem("Metodo 1")
+        self.selector_combobox.addItem("Metodo 2")
+        self.selector_combobox.addItem("Metodo 3")
+        #self.selector_combobox.setStyleSheet("QComboBox { background-color: white; border: 1px solid #ccc; padding: 5px; selection-background-color: #00BD9D; } QComboBox::drop-down { border: none; } QComboBox QAbstractItemView { border: 1px solid #ccc; } QComboBox::down-arrow { image: url(down_arrow.png); }")
+        self.selector_combobox.setStyleSheet("background-color: white;color: black; border: 1px solid #ccc; box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1); padding: 5px; selection-background-color: #00BD9D;")
+        self.selector_combobox.setSizeAdjustPolicy(QComboBox.AdjustToContents)
+        self.selector_combobox.view().setStyleSheet("color: black;")
+        self.layout.addWidget(self.selector_combobox, alignment=QtCore.Qt.AlignCenter)
+
+        # Botón Resolver
+        self.solve_button = QPushButton("Resolver")
+        self.solve_button.setStyleSheet("background-color: #00BD9D; color: white;")
+        self.layout.addWidget(self.solve_button, alignment=QtCore.Qt.AlignCenter)
+
+        self.setLayout(self.layout)
+
+        # Conexiones de los botones
+        self.info_button.clicked.connect(self.show_info_view)
+        self.tutorial_button.clicked.connect(self.show_tutorial_view)
+        self.credits_button.clicked.connect(self.show_credits_view)
+        self.solve_button.clicked.connect(self.solve)
         
-        # Crear el combobox para escoger el grado de la ecuación diferencial
-        self.combobox_grado = QComboBox()
-        self.combobox_grado.addItem('Primer grado')
-        self.combobox_grado.addItem('Segundo grado')
-        self.combobox_grado.addItem('Tercer grado')
-        
-        # Crear el label y el campo de texto para escribir la ecuación diferencial
-        self.label_ecuacion = QLabel('Escribe la ecuación diferencial:')
-        self.textbox_ecuacion = QLineEdit()
-        self.label2 = QLabel("La fórmula de la ecuación diferencial es:")
-        self.label3 = QLabel()
-        
-        # Crear el botón de validar
-        self.boton_validar = QPushButton('Validar')
-        
-        # Conectar el botón de validar con la función correspondiente
-        self.boton_validar.clicked.connect(self.validar_ecuacion)
-        
-        # Crear los layouts y añadir los widgets correspondientes
-        layout_vertical = QVBoxLayout()
-        layout_horizontal = QHBoxLayout()
-        layout_vertical.addWidget(self.combobox_grado)
-        layout_vertical.addWidget(self.label_ecuacion)
-        layout_vertical.addWidget(self.textbox_ecuacion)
-        layout_vertical.addWidget(self.label2)
-        layout_vertical.addWidget(self.label3)
-        layout_vertical.addWidget(self.boton_validar)
-        layout_horizontal.addLayout(layout_vertical)
-        
-        # Conectar la señal del cambio de texto en la entrada con la función actualizar_ecuacion
-        #self.textbox_ecuacion.textChanged.connect(self.validar_ecuacion)
-        
-        self.setLayout(layout_horizontal)
+        # Crear el stack de vistas
+        #self.stacked_widget = QStackedWidget()
+        #self.layout.addWidget(self.stacked_widget)
 
+        # Agregar la vista __init__ al stack
+        #self.stacked_widget.addWidget(self)
 
-    def validar_ecuacion(self):
-        # Obtener el grado de la ecuación diferencial escogido
-        grado = self.combobox_grado.currentText()
+    def show_tutorial_view(self):
+        webbrowser.open("https://www.youtube.com/watch?v=lo1PzjuGxFg")
 
-        # Obtener la ecuación diferencial ingresada
-        ecuacion = self.textbox_ecuacion.text()
+    def show_info_view(self):
+        info_view = QWidget()
+        info_view.setStyleSheet("background-color: #FFFBFA;")
+        layout = QVBoxLayout()
 
-        # Separamos la ecuación en términos
-        terms = re.findall(r"y'+", ecuacion)
+        # Contenido de la vista de información
+        info_label = QLabel("Aquí va la información de la aplicación.")
+        layout.addWidget(info_label, alignment=QtCore.Qt.AlignCenter)
 
-        # Buscamos la derivada de mayor grado en los términos de la ecuación
-        max_degree = 0
-        for term in terms:
-            if "y" in term:
-                degree = term.count("'")
-                if degree > max_degree:
-                    max_degree = degree
+        # Botón de regresar
+        back_button = QPushButton("Regresar")
+        back_button.setStyleSheet("background-color: #00BD9D; color: white;")
+        layout.addWidget(back_button, alignment=QtCore.Qt.AlignCenter)
+        back_button.clicked.connect(self.show_initial_view)
 
-        # Validar la ecuación diferencial
-        if grado == 'Primer grado':
-           
-            if max_degree != 1:
-                self.label3.setText("Error: la ecuación ingresada no es de primer grado.")
-                #exit()
-            else:
-                self.label3.setText("Ecuacion correcta")
+        info_view.setLayout(layout)
+        self.stacked_widget.addWidget(info_view)
 
-        elif grado == 'Segundo grado':
-           
-            # Validación de la ecuación
-            if max_degree != 2:
-                self.label3.setText("Error: la ecuación ingresada no es de segundo grado.")
-                #exit()
-            else:
-                self.label3.setText("Ecuacion correcta")
+        # Mostrar la vista de información
+        self.stacked_widget.setCurrentWidget(info_view)
 
-        elif grado == 'Tercer grado':
-            
-            # Validación de la ecuación
-            if max_degree != 3:
-                self.label3.setText("Error: la ecuación ingresada no es de tercer grado.")
-                #exit()
-            else:
-                self.label3.setText("Ecuacion correcta")
+    def show_credits_view(self):
+        credits_view = QWidget()
+        credits_view.setStyleSheet("background-color: #FFFBFA;")
+        layout = QVBoxLayout()
+
+        # Contenido de la vista de créditos
+        credits_label = QLabel("Aquí van los créditos de la aplicación.")
+        layout.addWidget(credits_label, alignment=QtCore.Qt.AlignCenter)
+
+        # Botón de regresar
+        back_button = QPushButton("Regresar")
+        back_button.setStyleSheet("background-color: #00BD9D; color: white;")
+        layout.addWidget(back_button, alignment=QtCore.Qt.AlignCenter)
+        back_button.clicked.connect(self.show_initial_view)
+
+        credits_view.setLayout(layout)
+        self.stacked_widget.addWidget(credits_view)
+
+        # Mostrar la vista de créditos
+        self.stacked_widget.setCurrentWidget(credits_view)
+
+    def show_initial_view(self):
+        # Mostrar la vista __init__
+        self.stacked_widget.setCurrentWidget(self)
+
+    def solve(self):
+        # Lógica para resolver el problema con el método seleccionado
+        method = self.selector_combobox.currentText()
+        text = self.input_line_edit.text()
+        # Realizar la operación correspondiente
 
 if __name__ == "__main__":
-    # Inicializar la aplicación y la ventana principal
     app = QApplication([])
-    main_window = MainWindow()
-    main_window.show()
-    
-    # Ejecutar la aplicación
+    window = MainWindow()
+    window.show()
     app.exec_()
