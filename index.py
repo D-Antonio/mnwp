@@ -7,65 +7,72 @@ class MainWindow(QWidget):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("JEdyCalc")
-        self.setStyleSheet("background-color: #FFFBFA;")
-        self.layout = QVBoxLayout()
+        self.stacked_widget = QStackedWidget()
+        self.layout = QVBoxLayout(self)
+        self.layout.addWidget(self.stacked_widget)
+
+        self.show_home_view()
+
+    def show_home_view(self):
+        home_view = QWidget()
+        home_view.setStyleSheet("background-color: #FFFBFA;")
+        layout = QVBoxLayout()
 
         # Botones superiores
         buttons_layout = QHBoxLayout()
-        self.info_button = QPushButton("Información")
-        self.info_button.setStyleSheet("background-color: #00BD9D; color: white;")
-        self.tutorial_button = QPushButton("Tutorial")
-        self.tutorial_button.setStyleSheet("background-color: #00BD9D; color: white;")
-        self.credits_button = QPushButton("Créditos")
-        self.credits_button.setStyleSheet("background-color: #00BD9D; color: white;")
+        info_button = QPushButton("Información")
+        info_button.setStyleSheet("background-color: #00BD9D; color: white;")
+        tutorial_button = QPushButton("Tutorial")
+        tutorial_button.setStyleSheet("background-color: #00BD9D; color: white;")
+        credits_button = QPushButton("Créditos")
+        credits_button.setStyleSheet("background-color: #00BD9D; color: white;")
 
-        buttons_layout.addWidget(self.credits_button)
-        buttons_layout.addWidget(self.tutorial_button)
-        buttons_layout.addWidget(self.info_button)
-
-        self.layout.addLayout(buttons_layout)
+        buttons_layout.addWidget(credits_button)
+        buttons_layout.addWidget(tutorial_button)
+        buttons_layout.addWidget(info_button)
 
         # Título
-        self.title_label = QLabel("JEdyCalc")
-        self.title_label.setStyleSheet("color: #BF1363; font-size: 24px; font-weight: bold;")
-        self.layout.addWidget(self.title_label, alignment=QtCore.Qt.AlignCenter)
+        title_label = QLabel("JEdyCalc")
+        title_label.setStyleSheet("color: #BF1363; font-size: 24px; font-weight: bold;")
+        title_label.setAlignment(QtCore.Qt.AlignCenter)
 
         # Input
-        self.input_line_edit = QLineEdit()
-        self.input_line_edit.setStyleSheet("background-color: white; border: 1px solid #ccc; padding: 5px; box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1);")
-        #self.input_line_edit.setStyleSheet("QLineEdit { background-color: white; border: 1px solid #ccc; padding: 5px; box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1); }")
-        self.layout.addWidget(self.input_line_edit)
+        input_line_edit = QLineEdit()
+        input_line_edit.setStyleSheet("background-color: white; border: 1px solid #ccc; padding: 5px; ")
 
         # Selector
-        self.selector_combobox = QComboBox()
-        self.selector_combobox.addItem("Metodo 1")
-        self.selector_combobox.addItem("Metodo 2")
-        self.selector_combobox.addItem("Metodo 3")
-        #self.selector_combobox.setStyleSheet("QComboBox { background-color: white; border: 1px solid #ccc; padding: 5px; selection-background-color: #00BD9D; } QComboBox::drop-down { border: none; } QComboBox QAbstractItemView { border: 1px solid #ccc; } QComboBox::down-arrow { image: url(down_arrow.png); }")
-        self.selector_combobox.setStyleSheet("background-color: white;color: black; border: 1px solid #ccc; box-shadow: 0px 2px 2px rgba(0, 0, 0, 0.1); padding: 5px; selection-background-color: #00BD9D;")
-        self.selector_combobox.setSizeAdjustPolicy(QComboBox.AdjustToContents)
-        self.selector_combobox.view().setStyleSheet("color: black;")
-        self.layout.addWidget(self.selector_combobox, alignment=QtCore.Qt.AlignCenter)
+        selector_combobox = QComboBox()
+        selector_combobox.addItem("Metodo 1")
+        selector_combobox.addItem("Metodo 2")
+        selector_combobox.addItem("Metodo 3")
+        selector_combobox.setStyleSheet("background-color: white;color: black; border: 1px solid #ccc;  padding: 5px; selection-background-color: #00BD9D;")
+        selector_combobox.setSizeAdjustPolicy(QComboBox.AdjustToContents)
+        selector_combobox.view().setStyleSheet("color: black;")
 
         # Botón Resolver
-        self.solve_button = QPushButton("Resolver")
-        self.solve_button.setStyleSheet("background-color: #00BD9D; color: white;")
-        self.layout.addWidget(self.solve_button, alignment=QtCore.Qt.AlignCenter)
+        solve_button = QPushButton("Resolver")
+        solve_button.setStyleSheet("background-color: #00BD9D; color: white;")
 
-        self.setLayout(self.layout)
+        # Agregar widgets al diseño
+        layout.addLayout(buttons_layout)
+        layout.addWidget(title_label)
+        layout.addWidget(input_line_edit)
+        layout.addWidget(selector_combobox)
+        layout.addWidget(solve_button)
+
+        home_view.setLayout(layout)
+        self.stacked_widget.addWidget(home_view)
 
         # Conexiones de los botones
-        self.info_button.clicked.connect(self.show_info_view)
-        self.tutorial_button.clicked.connect(self.show_tutorial_view)
-        self.credits_button.clicked.connect(self.show_credits_view)
-        self.solve_button.clicked.connect(self.solve)
-        
-        # Crear el stack de vistas
-        #self.stacked_widget = QStackedWidget()
-        #self.layout.addWidget(self.stacked_widget)
+        info_button.clicked.connect(self.show_info_view)
+        tutorial_button.clicked.connect(self.show_tutorial_view)
+        credits_button.clicked.connect(self.show_credits_view)
+        solve_button.clicked.connect(self.solve)
 
-        # Agregar la vista __init__ al stack
-        #self.stacked_widget.addWidget(self)
+        # Mostrar la vista principal
+        self.stacked_widget.setCurrentWidget(home_view)
+
+
 
     def show_tutorial_view(self):
         webbrowser.open("https://www.youtube.com/watch?v=lo1PzjuGxFg")
@@ -83,7 +90,7 @@ class MainWindow(QWidget):
         back_button = QPushButton("Regresar")
         back_button.setStyleSheet("background-color: #00BD9D; color: white;")
         layout.addWidget(back_button, alignment=QtCore.Qt.AlignCenter)
-        back_button.clicked.connect(self.show_initial_view)
+        back_button.clicked.connect(self.show_home_view)
 
         info_view.setLayout(layout)
         self.stacked_widget.addWidget(info_view)
@@ -104,17 +111,13 @@ class MainWindow(QWidget):
         back_button = QPushButton("Regresar")
         back_button.setStyleSheet("background-color: #00BD9D; color: white;")
         layout.addWidget(back_button, alignment=QtCore.Qt.AlignCenter)
-        back_button.clicked.connect(self.show_initial_view)
+        back_button.clicked.connect(self.show_home_view)
 
         credits_view.setLayout(layout)
         self.stacked_widget.addWidget(credits_view)
 
         # Mostrar la vista de créditos
         self.stacked_widget.setCurrentWidget(credits_view)
-
-    def show_initial_view(self):
-        # Mostrar la vista __init__
-        self.stacked_widget.setCurrentWidget(self)
 
     def solve(self):
         # Lógica para resolver el problema con el método seleccionado
