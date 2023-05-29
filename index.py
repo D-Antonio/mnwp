@@ -171,27 +171,55 @@ class MainWindow(QWidget):
     #   Lógica   #
     ##############
 
+    def is_differential(self, e):
+        return False
+    
+    def detect_order(self, e):
+        return 4
+    
+    def is_homogeneous(self,e):
+        return False
+    
+    def detect_homogeneity_degree(self):
+        return 4
+    
+    def solve_homogeneous_equation(self, e, m):
+        return "result"
+
     def solve(self):
         # Lógica para resolver el problema con el método seleccionado
-        method = self.selector_combobox.currentText()
+        method = self.selector_combobox.currentText()  # sustitución de variables, transformada de Laplace, serie de potencias
         text = self.input_line_edit.text()
+        
         # Realizar la operación correspondiente
-        # Si la ecuación es diferencial:
-        #     Detectar el tipo de orden de la ecuación
-        #     Si el tipo de orden es mayor a 3:
-        #         Mostrar mensaje de error indicando que el programa no puede resolver ecuaciones de orden mayor a 3
-        #     Sino:
-        #         Detectar si la ecuación es homogénea o heterogénea
-        #         Si la ecuación es homogénea:
-        #              Detectar el grado de homogeneidad
-        #              Resolver la ecuación homogénea según el método seleccionado
-        #              Mostrar la solución obtenida
-        #         Sino:
-        #              Mostrar mensaje de error indicando que el programa no puede resolver ecuaciones heterogéneas
-        #     Sino:
-        #     Mostrar mensaje de error indicando que la ecuación no es diferencial
-        # Sino:
-        #     Mostrar mensaje de error indicando que no se ingresó una ecuación diferencial
+        if self.is_differential(text):
+            # Si la ecuación es diferencial:
+            # Detectar el tipo de orden de la ecuación
+            order = self.detect_order(text)
+            
+            if order > 3:
+                # Si el tipo de orden es mayor a 3:
+                # Mostrar mensaje de error indicando que el programa no puede resolver ecuaciones de orden mayor a 3
+                print("Error: No se pueden resolver ecuaciones de orden mayor a 3.")
+            else:
+                # Sino:
+                # Detectar si la ecuación es homogénea o heterogénea
+                if self.is_homogeneous(text):
+                    # Si la ecuación es homogénea:
+                    # Detectar el grado de homogeneidad
+                    degree = self.detect_homogeneity_degree(text)
+                    # Resolver la ecuación homogénea según el método seleccionado
+                    solution = self.solve_homogeneous_equation(text, method)
+                    # Mostrar la solución obtenida
+                    
+                else:
+                    # Sino:
+                    # Mostrar mensaje de error indicando que el programa no puede resolver ecuaciones heterogéneas
+                    print("Error: No se pueden resolver ecuaciones heterogéneas.")
+        else:
+            # Sino:
+            # Mostrar mensaje de error indicando que la ecuación no es diferencial
+            print("Error: La ecuación no es diferencial.")
 
 if __name__ == "__main__":
     app = QApplication([])
