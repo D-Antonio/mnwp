@@ -176,6 +176,22 @@ class MainWindow(QWidget):
         method = self.selector_combobox.currentText()
         text = self.input_line_edit.text()
         # Realizar la operación correspondiente
+        # Si la ecuación es diferencial:
+        #     Detectar el tipo de orden de la ecuación
+        #     Si el tipo de orden es mayor a 3:
+        #         Mostrar mensaje de error indicando que el programa no puede resolver ecuaciones de orden mayor a 3
+        #     Sino:
+        #         Detectar si la ecuación es homogénea o heterogénea
+        #         Si la ecuación es homogénea:
+        #              Detectar el grado de homogeneidad
+        #              Resolver la ecuación homogénea según el método seleccionado
+        #              Mostrar la solución obtenida
+        #         Sino:
+        #              Mostrar mensaje de error indicando que el programa no puede resolver ecuaciones heterogéneas
+        #     Sino:
+        #     Mostrar mensaje de error indicando que la ecuación no es diferencial
+        # Sino:
+        #     Mostrar mensaje de error indicando que no se ingresó una ecuación diferencial
 
 if __name__ == "__main__":
     app = QApplication([])
