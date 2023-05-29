@@ -44,9 +44,9 @@ class MainWindow(QWidget):
 
         # Selector
         self.selector_combobox = QComboBox()
-        self.selector_combobox.addItem("sustitución de variables")
-        self.selector_combobox.addItem("transformada de Laplace")
-        self.selector_combobox.addItem("serie de potencias")
+        self.selector_combobox.addItem("Metodo 1")
+        self.selector_combobox.addItem("Metodo 2")
+        self.selector_combobox.addItem("Metodo 3")
         self.selector_combobox.setStyleSheet("background-color: white;color: black; border: 1px solid #ccc;  padding: 5px; selection-background-color: #00BD9D;")
         self.selector_combobox.setSizeAdjustPolicy(QComboBox.AdjustToContents)
         self.selector_combobox.view().setStyleSheet("color: black;")
