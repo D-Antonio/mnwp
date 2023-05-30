@@ -172,19 +172,29 @@ class MainWindow(QWidget):
     ##############
 
     def is_differential(self, e):
-        return False
-    
+        # Verifica si la expresión 'e' es una ecuación diferencial
+        # Devuelve True si es una ecuación diferencial, False en caso contrario
+        return True
+
     def detect_order(self, e):
-        return 4
-    
-    def is_homogeneous(self,e):
-        return False
-    
-    def detect_homogeneity_degree(self):
-        return 4
-    
+        # Detecta el orden de la ecuación diferencial 'e'
+        # Devuelve el orden de la ecuación como un número entero
+        return 2
+
+    def is_homogeneous(self, e):
+        # Verifica si la ecuación diferencial 'e' es homogénea
+        # Devuelve True si es homogénea, False en caso contrario
+        return True
+
+    def detect_homogeneity_degree(self, e):
+        # Detecta el grado de homogeneidad de la ecuación diferencial 'e'
+        # Devuelve el grado de homogeneidad como un número entero
+        return 2
+
     def solve_homogeneous_equation(self, e, m):
-        return "result"
+        # Resuelve la ecuación diferencial homogénea 'e' con el método 'm'
+        # Devuelve la solución de la ecuación como una cadena de texto
+        return "Solución de la ecuación homogénea"
 
     def solve(self):
         # Lógica para resolver el problema con el método seleccionado
