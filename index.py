@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QApplication, QPushButton, QHBoxLayout, QWidget, QLa
 from PyQt5.QtGui import QColor
 from PyQt5 import QtCore
 import webbrowser
+import sympy
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -171,30 +172,69 @@ class MainWindow(QWidget):
     #   Lógica   #
     ##############
 
-    def is_differential(self, e):
+    def is_differential(e):
         # Verifica si la expresión 'e' es una ecuación diferencial
         # Devuelve True si es una ecuación diferencial, False en caso contrario
-        return True
+        # Verificar si la expresión contiene al menos una derivada
+        if 'd/dx' in e:
+            return True
+        else:
+            return False
 
-    def detect_order(self, e):
+    def detect_order(e):
         # Detecta el orden de la ecuación diferencial 'e'
         # Devuelve el orden de la ecuación como un número entero
-        return 2
+        # Contar el número de veces que aparece la cadena 'd/dx'
+        order = e.count('d/dx')
+        return order
 
-    def is_homogeneous(self, e):
+    def is_homogeneous(e):
         # Verifica si la ecuación diferencial 'e' es homogénea
         # Devuelve True si es homogénea, False en caso contrario
+        # Verificar si la ecuación no contiene términos no homogéneos
+        terms = e.split('+')  # Separar los términos de la ecuación
+        for term in terms:
+            if 'x' in term:
+                return False  # Se encontró un término no homogéneo que contiene 'x'
         return True
 
-    def detect_homogeneity_degree(self, e):
+    def detect_homogeneity_degree(e):
         # Detecta el grado de homogeneidad de la ecuación diferencial 'e'
         # Devuelve el grado de homogeneidad como un número entero
-        return 2
+        # Contar el número de veces que aparece la variable 'x' en los términos de la ecuación
+        terms = e.split('+')  # Separar los términos de la ecuación
+        degree = 0
+        for term in terms:
+            if 'x' in term:
+                degree += term.count('x')
+        return degree
 
-    def solve_homogeneous_equation(self, e, m):
-        # Resuelve la ecuación diferencial homogénea 'e' con el método 'm'
+    def solve_homogeneous_equation(e, method):
+        # Resuelve la ecuación diferencial homogénea 'e' con el método 'method'
         # Devuelve la solución de la ecuación como una cadena de texto
-        return "Solución de la ecuación homogénea"
+        
+        x = sympy.symbols('x')  # Variable simbólica
+        
+        # Construir la ecuación diferencial en términos de la variable simbólica
+        equation = sympy.Eq(eval(e), 0)
+        
+        # Resolver la ecuación diferencial homogénea según el método seleccionado
+        if method == 'Sustitución de variables':
+            solution = sympy.dsolve(equation)
+        elif method == 'Transformada de Laplace':
+            solution = sympy.laplace_transform(equation, x, sympy.symbols('s'))[0]
+        elif method == 'Serie de potencias':
+            solution = sympy.series(equation.rhs, x)
+        else:
+            solution = None
+        
+        # Convertir la solución en una cadena de texto
+        if solution is not None:
+            solution = str(solution)
+        else:
+            solution = "No se encontró una solución para el método seleccionado"
+        
+        return solution
 
     def solve(self):
         # Lógica para resolver el problema con el método seleccionado
