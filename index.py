@@ -2,6 +2,7 @@ from PyQt5.QtWidgets import QApplication, QPushButton, QHBoxLayout, QWidget, QLa
 from PyQt5.QtGui import QColor
 from PyQt5 import QtCore
 import webbrowser
+import sympy
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -171,27 +172,104 @@ class MainWindow(QWidget):
     #   Lógica   #
     ##############
 
+    def is_differential(e):
+        # Verifica si la expresión 'e' es una ecuación diferencial
+        # Devuelve True si es una ecuación diferencial, False en caso contrario
+        # Verificar si la expresión contiene al menos una derivada
+        if 'd/dx' in e:
+            return True
+        else:
+            return False
+
+    def detect_order(e):
+        # Detecta el orden de la ecuación diferencial 'e'
+        # Devuelve el orden de la ecuación como un número entero
+        # Contar el número de veces que aparece la cadena 'd/dx'
+        order = e.count('d/dx')
+        return order
+
+    def is_homogeneous(e):
+        # Verifica si la ecuación diferencial 'e' es homogénea
+        # Devuelve True si es homogénea, False en caso contrario
+        # Verificar si la ecuación no contiene términos no homogéneos
+        terms = e.split('+')  # Separar los términos de la ecuación
+        for term in terms:
+            if 'x' in term:
+                return False  # Se encontró un término no homogéneo que contiene 'x'
+        return True
+
+    def detect_homogeneity_degree(e):
+        # Detecta el grado de homogeneidad de la ecuación diferencial 'e'
+        # Devuelve el grado de homogeneidad como un número entero
+        # Contar el número de veces que aparece la variable 'x' en los términos de la ecuación
+        terms = e.split('+')  # Separar los términos de la ecuación
+        degree = 0
+        for term in terms:
+            if 'x' in term:
+                degree += term.count('x')
+        return degree
+
+    def solve_homogeneous_equation(e, method):
+        # Resuelve la ecuación diferencial homogénea 'e' con el método 'method'
+        # Devuelve la solución de la ecuación como una cadena de texto
+        
+        x = sympy.symbols('x')  # Variable simbólica
+        
+        # Construir la ecuación diferencial en términos de la variable simbólica
+        equation = sympy.Eq(eval(e), 0)
+        
+        # Resolver la ecuación diferencial homogénea según el método seleccionado
+        if method == 'Sustitución de variables':
+            solution = sympy.dsolve(equation)
+        elif method == 'Transformada de Laplace':
+            solution = sympy.laplace_transform(equation, x, sympy.symbols('s'))[0]
+        elif method == 'Serie de potencias':
+            solution = sympy.series(equation.rhs, x)
+        else:
+            solution = None
+        
+        # Convertir la solución en una cadena de texto
+        if solution is not None:
+            solution = str(solution)
+        else:
+            solution = "No se encontró una solución para el método seleccionado"
+        
+        return solution
+
     def solve(self):
         # Lógica para resolver el problema con el método seleccionado
-        method = self.selector_combobox.currentText()
+        method = self.selector_combobox.currentText()  # sustitución de variables, transformada de Laplace, serie de potencias
         text = self.input_line_edit.text()
+        
         # Realizar la operación correspondiente
-        # Si la ecuación es diferencial:
-        #     Detectar el tipo de orden de la ecuación
-        #     Si el tipo de orden es mayor a 3:
-        #         Mostrar mensaje de error indicando que el programa no puede resolver ecuaciones de orden mayor a 3
-        #     Sino:
-        #         Detectar si la ecuación es homogénea o heterogénea
-        #         Si la ecuación es homogénea:
-        #              Detectar el grado de homogeneidad
-        #              Resolver la ecuación homogénea según el método seleccionado
-        #              Mostrar la solución obtenida
-        #         Sino:
-        #              Mostrar mensaje de error indicando que el programa no puede resolver ecuaciones heterogéneas
-        #     Sino:
-        #     Mostrar mensaje de error indicando que la ecuación no es diferencial
-        # Sino:
-        #     Mostrar mensaje de error indicando que no se ingresó una ecuación diferencial
+        if self.is_differential(text):
+            # Si la ecuación es diferencial:
+            # Detectar el tipo de orden de la ecuación
+            order = self.detect_order(text)
+            
+            if order > 3:
+                # Si el tipo de orden es mayor a 3:
+                # Mostrar mensaje de error indicando que el programa no puede resolver ecuaciones de orden mayor a 3
+                print("Error: No se pueden resolver ecuaciones de orden mayor a 3.")
+            else:
+                # Sino:
+                # Detectar si la ecuación es homogénea o heterogénea
+                if self.is_homogeneous(text):
+                    # Si la ecuación es homogénea:
+                    # Detectar el grado de homogeneidad
+                    degree = self.detect_homogeneity_degree(text)
+                    # Resolver la ecuación homogénea según el método seleccionado
+                    solution = self.solve_homogeneous_equation(text, method)
+                    # Mostrar la solución obtenida
+                    
+                else:
+                    # Sino:
+                    # Mostrar mensaje de error indicando que el programa no puede resolver ecuaciones heterogéneas
+                    print("Error: No se pueden resolver ecuaciones heterogéneas.")
+        else:
+            # Sino:
+            # Mostrar mensaje de error indicando que la ecuación no es diferencial
+            print("Error: La ecuación no es diferencial.")
 
 if __name__ == "__main__":
     app = QApplication([])
