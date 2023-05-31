@@ -5,6 +5,8 @@ import webbrowser
 import sympy
 
 class MainWindow(QWidget):
+    text = ""
+
     def __init__(self):
         super().__init__()
         self.setWindowTitle("JEdyCalc")
@@ -69,7 +71,9 @@ class MainWindow(QWidget):
         info_button.clicked.connect(self.show_info_view)
         tutorial_button.clicked.connect(self.show_tutorial_view)
         credits_button.clicked.connect(self.show_credits_view)
-        solve_button.clicked.connect(self.show_solution_view)
+        solve_button.clicked.connect(self.solve)
+
+        self.input_line_edit.setText(self.text)
 
         # Mostrar la vista principal
         self.stacked_widget.setCurrentWidget(home_view)
@@ -78,6 +82,8 @@ class MainWindow(QWidget):
         webbrowser.open("https://www.youtube.com/watch?v=lo1PzjuGxFg")
 
     def show_info_view(self):
+        text = self.input_line_edit.text()
+        self.text = text
         info_view = QWidget()
         info_view.setStyleSheet("background-color: #FFFBFA;")
         layout = QVBoxLayout()
@@ -98,6 +104,8 @@ class MainWindow(QWidget):
         self.stacked_widget.setCurrentWidget(info_view)
 
     def show_credits_view(self):
+        text = self.input_line_edit.text()
+        self.text = text
         credits_view = QWidget()
         credits_view.setStyleSheet("background-color: #FFFBFA;")
         layout = QVBoxLayout()
@@ -120,6 +128,7 @@ class MainWindow(QWidget):
     def show_solution_view(self):
         method = self.selector_combobox.currentText()
         text = self.input_line_edit.text()
+        self.text = text
         solution_view = QWidget()
         solution_view.setStyleSheet("background-color: #FFFBFA;")
         layout = QVBoxLayout()
@@ -166,6 +175,34 @@ class MainWindow(QWidget):
 
         # Mostrar la vista de solución
         self.stacked_widget.setCurrentWidget(solution_view)
+
+    def show_error_view(self, msg):
+        text = self.input_line_edit.text()
+        self.text = text
+        error_view = QWidget()
+        error_view.setStyleSheet("background-color: #FFFBFA;")
+        layout = QVBoxLayout()
+
+        # Título
+        title_label = QLabel("Error")
+        title_label.setStyleSheet("color: #BF1363; font-size: 24px; font-weight: bold;")
+        title_label.setAlignment(QtCore.Qt.AlignCenter)
+        layout.addWidget(title_label)
+
+        # Mensaje de error
+        credits_label = QLabel(f" {msg}")
+        layout.addWidget(credits_label, alignment=QtCore.Qt.AlignCenter)
+        
+        # Botón de regresar
+        back_button = QPushButton("Regresar")
+        back_button.setStyleSheet("background-color: #00BD9D; color: white;")
+        layout.addWidget(back_button, alignment=QtCore.Qt.AlignCenter)
+        back_button.clicked.connect(self.show_home_view)
+        error_view.setLayout(layout)
+        self.stacked_widget.addWidget(error_view)
+
+        # Mostrar la vista de créditos
+        self.stacked_widget.setCurrentWidget(error_view)
 
 
     ##############
