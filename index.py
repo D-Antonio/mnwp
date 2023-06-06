@@ -7,13 +7,27 @@ from sympy import symbols, diff, Function, Eq, sympify, sin, Derivative, cos, ex
 from sympy.parsing.sympy_parser import parse_expr
 import numpy as np
 import re
+import csv
 import math
+from sklearn.feature_extraction.text import CountVectorizer
+from joblib import load
+
 
 class MainWindow(QWidget):
     text = ""
+    vectorizer = CountVectorizer()
 
     def __init__(self):
         super().__init__()
+        ecuaciones = []
+        with open('eq.csv', 'r') as csvfile:
+            reader = csv.reader(csvfile, delimiter=',')
+            next(reader)  # Saltar la primera fila (los encabezados)
+            for row in reader:
+                ecuaciones.append(row)
+        self.vectorizer.fit_transform([x[0] for x in ecuaciones])
+        self.model = load('./modelo_ecuaciones.joblib')
+
         self.setWindowTitle("JEdyCalc")
         self.stacked_widget = QStackedWidget()
         self.layout = QVBoxLayout(self)
@@ -52,9 +66,9 @@ class MainWindow(QWidget):
 
         # Selector
         self.selector_combobox = QComboBox()
-        self.selector_combobox.addItem("Metodo 1")
-        self.selector_combobox.addItem("Metodo 2")
-        self.selector_combobox.addItem("Metodo 3")
+        self.selector_combobox.addItem("sustitución de variables")
+        self.selector_combobox.addItem("serie de potencias")
+        self.selector_combobox.addItem("transformada de Laplace")
         self.selector_combobox.setStyleSheet("background-color: white;color: black; border: 1px solid #ccc;  padding: 5px; selection-background-color: #00BD9D;")
         self.selector_combobox.setSizeAdjustPolicy(QComboBox.AdjustToContents)
         self.selector_combobox.view().setStyleSheet("color: black;")
@@ -144,19 +158,19 @@ class MainWindow(QWidget):
         title_label.setAlignment(QtCore.Qt.AlignCenter)
 
         # Información de la ecuación
-        equation_label = QLabel(f"Ecuación: {text}\nSí es una ecuación diferencial")
+        equation_label = QLabel(f"Ecuación: {self.eq}\n{self.eq_contex}")
         equation_label.setStyleSheet("color: black; font-size: 16px;")
 
         # Detalles de la ecuación
-        details_label = QLabel("* Orden: 2\n* Tipo: Homogénea\n* Grado de homogeneidad: 3")
+        details_label = QLabel(f"* Orden: {self.order}\n* Tipo: {self.type}\n* Grado de homogeneidad: 3")
         details_label.setStyleSheet("color: black; font-size: 16px;")
 
         # Solución
-        solution_label = QLabel(f"Resultado de la ecuación con el {method}\n")
+        solution_label = QLabel(f"Resultado de la ecuación con: {method}\n")
         solution_label.setStyleSheet("color: black; font-size: 16px;")
 
        # Área de texto para mostrar la solución
-        solution_text_edit = QTextEdit("123... aquí la solucion")
+        solution_text_edit = QTextEdit(f"{self.solution}")
         solution_text_edit.setStyleSheet("background-color: white; border: 1px solid #ccc; padding: 5px;")
         solution_text_edit.setFixedHeight(3 * solution_text_edit.fontMetrics().height())
         solution_text_edit.setReadOnly(True)  # Deshabilitar la edición del texto
@@ -220,22 +234,19 @@ class MainWindow(QWidget):
         else:
             return False
 
-    def detect_order(self, e):
-        # Detecta el orden de la ecuación diferencial 'e'
-        # Devuelve el orden de la ecuación como un número entero
-        # Contar el número de veces que aparece la cadena 'd/dx'
-        order = e.count('d/dx')
-        return order
-
-    def is_homogeneous(self, e):
-        # Verifica si la ecuación diferencial 'e' es homogénea
-        # Devuelve True si es homogénea, False en caso contrario
-        # Verificar si la ecuación no contiene términos no homogéneos
-        terms = e.split('+')  # Separar los términos de la ecuación
+    def detect_order(self, eq):
+        max_degree = 0
+        terms = re.findall(r"y'+", eq)
         for term in terms:
-            if 'x' in term:
-                return False  # Se encontró un término no homogéneo que contiene 'x'
-        return True
+            if "y" in term:
+                degree = term.count("'")
+            if degree > max_degree:
+                max_degree = degree
+        return max_degree
+
+    def is_homogeneous(self):
+       eq = self.vectorizer.transform([self.eq])
+       return self.model.predict(eq)[0]
 
     def detect_homogeneity_degree(self, e):
         # Detecta el grado de homogeneidad de la ecuación diferencial 'e'
@@ -275,15 +286,13 @@ class MainWindow(QWidget):
         
         return solution
     
-    def parse_equation(self, human_equation):
+    def standar_eq(self, human_equation):
         pattern = r'\(d\^(\d+)\)y/d\(x\^\1\)|dy/dx'
-
         def replace(match):
             if match.group(0) == 'dy/dx':
                 return 'y'
             else:
                 num_derivatives = int(match.group(1))
-
                 if num_derivatives == 1:
                     return 'y'
                 elif num_derivatives == 2:
@@ -293,28 +302,18 @@ class MainWindow(QWidget):
                 elif num_derivatives >= 4:
                     return "y'''"
         human_equation = re.sub(pattern, replace, human_equation)
+        return human_equation
 
+    def parse_equation(self, human_equation):
         human_equation = re.sub(r'e\*\*x|e\^x', 'exp(x)', human_equation)
         human_equation = re.sub(r'y\'\'\'', 'y.diff(x, x, x)', human_equation)
         human_equation = re.sub(r'y\'\'', 'y.diff(x, x)', human_equation)
         human_equation = re.sub(r'y\'', 'y.diff(x)', human_equation)
-
-        # Reemplazar los términos numéricos
-        #human_equation = re.sub(r'(\d+)', r'\1*', human_equation)
-        human_equation = re.sub(r'(\d+)([xy])', r'\1*\2', human_equation)
-
-        # Reemplazar n^n por n**n
+        human_equation = re.sub(r'(\d+)', r'\1*', human_equation)
         human_equation = human_equation.replace("^", "**")
-        #human_equation = re.sub(r'\^(\d+)', r'x**\1', human_equation)
-
-        # Reemplazar x^2 * ((d^2)y)/d(x^2)) por x.diff(x)**2 * y.diff(x, x) 
+        human_equation = human_equation.replace("e", "E")
         human_equation = re.sub(r'(\w)\^(\d+)\s*\*\s*\(\(d\^\2\)y\)/d\((\w)\^\2\)', r'\1.diff(\3)**\2 * y.diff(\3, \3)', human_equation)
-
-        # Agregar paréntesis si el término no los tiene
         human_equation = re.sub(r'(?<=[\dxy\)])-', '-1*', human_equation)
-        #human_equation = re.sub(r'(?<=[\dx])(?=[^-+])', '(', human_equation)
-        #human_equation = re.sub(r'(?<=[^-+])(?=[\dx])', ')', human_equation)
-        #human_equation = re.sub(r'(?<!\()\b(\w+)\b(?!.*\))', r'(\1)', human_equation)
 
         if '=' in human_equation:
             sides = human_equation.split('=')
@@ -338,45 +337,34 @@ class MainWindow(QWidget):
         except (SyntaxError, TypeError, NameError):
             return False
 
-
     def solve(self):
         # Lógica para resolver el problema con el método seleccionado
         method = self.selector_combobox.currentText()  # sustitución de variables, transformada de Laplace, serie de potencias
         text = self.input_line_edit.text()
         self.text = text
+        self.eq = self.standar_eq(self.text)
+        eq = self.is_equation(self.eq)
+        self.order = "No aplica"
+        self.type = "No aplica"
+        self.solution = f"Error: No se puede resolver esta ecuación {self.eq}"
 
-        eq = self.is_equation(text)
-        
         if eq:
-            # Realizar la operación correspondiente
             if self.is_differential(eq):
-                # Si la ecuación es diferencial:
-                # Detectar el tipo de orden de la ecuación
-                order = self.detect_order(eq)
-                
-                if order > 3:
-                    # Si el tipo de orden es mayor a 3:
-                    # Mostrar mensaje de error indicando que el programa no puede resolver ecuaciones de orden mayor a 3
-                    self.show_error_view("Error: No se pueden resolver ecuaciones de orden mayor a 3.")
+                self.eq_contex = "Sí es una ecuación diferencial."
+                self.order = self.detect_order(self.eq)
+                self.type = self.is_homogeneous()
+                if self.order > 3:
+                    self.order = f"{self.order}, no se pueden resolver ecuaciones de orden mayor a 3."
                 else:
-                    # Sino:
-                    # Detectar si la ecuación es homogénea o heterogénea
-                    if self.is_homogeneous(eq):
-                        # Si la ecuación es homogénea:
-                        # Detectar el grado de homogeneidad
-                        degree = self.detect_homogeneity_degree(eq)
-                        # Resolver la ecuación homogénea según el método seleccionado
-                        solution = self.solve_homogeneous_equation(eq, method)
-                        # Mostrar la solución obtenida
-                        
+                    if self.type == "homogénea":
+                        #degree = self.detect_homogeneity_degree(eq)
+                        #solution = self.solve_homogeneous_equation(eq, method)
+                        self.show_solution_view()
                     else:
-                        # Sino:
-                        # Mostrar mensaje de error indicando que el programa no puede resolver ecuaciones heterogéneas
-                        self.show_error_view("Error: No se pueden resolver ecuaciones heterogéneas.")
+                        self.solution = "Error: No se pueden resolver ecuaciones heterogéneas."
             else:
-                # Sino:
-                # Mostrar mensaje de error indicando que la ecuación no es diferencial
-                self.show_error_view(f"Error: La ecuación no es diferencial.")
+                self.eq_contex = "Error: La ecuación no es diferencial."
+            self.show_solution_view()
         else: 
             self.show_error_view(f"La ecuacion no es válida")
 
@@ -385,3 +373,7 @@ if __name__ == "__main__":
     window = MainWindow()
     window.show()
     app.exec_()
+
+# (҂·_·)
+# <,︻╦╤─ ҉ - - - -
+# /﹋\
