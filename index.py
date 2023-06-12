@@ -91,7 +91,15 @@ class MainWindow(QWidget):
         info_button.clicked.connect(self.show_info_view)
         tutorial_button.clicked.connect(self.show_tutorial_view)
         credits_button.clicked.connect(self.show_credits_view)
-        solve_button.clicked.connect(self.solve)
+
+        def disable_solve_button():
+            solve_button.setStyleSheet("background-color: #ffc501; color: white;")
+            solve_button.setEnabled(False)
+            solve_button.setText("Cargando...")
+            QApplication.processEvents()
+            self.solve()
+
+        solve_button.clicked.connect(disable_solve_button)
 
         self.input_line_edit.setText(self.text)
 
