@@ -1,17 +1,18 @@
 from PyQt5.QtWidgets import QApplication, QPushButton, QHBoxLayout, QWidget, QLabel, QLineEdit, QVBoxLayout, QComboBox, QStackedWidget, QTextEdit
 from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QFont
 from PyQt5 import QtCore
 import webbrowser
-import sympy
-from sympy import symbols, diff, Function, Eq, sympify, sin, Derivative, cos, exp, E, Symbol
+import sympy as sp
+from sympy import symbols, diff, Function, pretty, Eq, sympify, sin, latex, Derivative, LaplaceTransform, cos, exp, log, E, Symbol, dsolve, series, O, collect, factorial, pprint
 from sympy.parsing.sympy_parser import parse_expr
+from sympy.solvers.ode import dsolve
 import numpy as np
 import re
-import csv
 import math
 from sklearn.feature_extraction.text import CountVectorizer
 from joblib import load
-
+import csv
 
 class MainWindow(QWidget):
     text = ""
@@ -162,18 +163,15 @@ class MainWindow(QWidget):
         equation_label.setStyleSheet("color: black; font-size: 16px;")
 
         # Detalles de la ecuación
-        details_label = QLabel(f"* Orden: {self.order}\n* Tipo: {self.type}\n* Grado de homogeneidad: 3")
+        details_label = QLabel(f"* Orden: {self.order}\n* Tipo: {self.type}\n* Grado de homogeneidad: {self.degree}")
         details_label.setStyleSheet("color: black; font-size: 16px;")
 
         # Solución
-        solution_label = QLabel(f"Resultado de la ecuación con: {method}\n")
+        solution_label = QLabel(f"Resultado de la ecuación por {method}\n\n{self.solution}")
         solution_label.setStyleSheet("color: black; font-size: 16px;")
-
-       # Área de texto para mostrar la solución
-        solution_text_edit = QTextEdit(f"{self.solution}")
-        solution_text_edit.setStyleSheet("background-color: white; border: 1px solid #ccc; padding: 5px;")
-        solution_text_edit.setFixedHeight(3 * solution_text_edit.fontMetrics().height())
-        solution_text_edit.setReadOnly(True)  # Deshabilitar la edición del texto
+        font = QFont()
+        font.setFamily("Consolas")
+        solution_label.setFont(font)
 
         # Botón Regresar
         back_button = QPushButton("Regresar")
@@ -187,7 +185,7 @@ class MainWindow(QWidget):
         layout.addWidget(equation_label)
         layout.addWidget(details_label)
         layout.addWidget(solution_label)
-        layout.addWidget(solution_text_edit)
+        #layout.addWidget(solution_text_edit)
         layout.addWidget(back_button)
         solution_view.setLayout(layout)
         self.stacked_widget.addWidget(solution_view)
@@ -228,6 +226,103 @@ class MainWindow(QWidget):
     #   Lógica   #
     ##############
 
+    def resolver_ed_homogenea_laplace(self, ecuacion):
+        #x = symbols('x')
+        s, t = symbols('s t')
+        y = Function('y')(t)
+
+        # ecuacion = Eq(ecuacion, 0)
+
+        # Aplicar la transformada de Laplace a ambos lados de la ecuación
+        transformada_ecuacion = LaplaceTransform(ecuacion.lhs, t, s).doit()[0] - LaplaceTransform(ecuacion.rhs, t, s).doit()[0]
+
+        # Resolver la ecuación transformada
+        solucion_transformada = y * transformada_ecuacion
+
+        # Mostrar el resumen paso a paso
+        resumen = "Paso a paso de la solución:\n"
+        resumen += "---------------------------\n"
+        resumen += "1. Aplicar la transformada de Laplace a ambos lados de la ecuación:\n\n"
+        resumen += pretty(transformada_ecuacion, use_unicode=True) + "\n\n\n"
+        resumen += "2. Resolver la ecuación transformada:\n\n"
+        resumen += pretty(solucion_transformada, use_unicode=True)
+
+        return resumen
+
+    def resolver_ed_homogenea_serie_potencias(self, ecuacion, orden):
+
+        x = symbols('x')
+        y = Function('y')(x)
+
+        #ecuacion = eval(eq)
+        
+        # Expresar la ecuación diferencial en términos de la serie de potencias
+        ecuacion_series = collect(ecuacion.subs(y, sum(x**n/factorial(n) for n in range(orden + 1))), x)
+
+        # Obtener las ecuaciones para cada término de la serie
+        ecuaciones_individuales = ecuacion_series.as_ordered_terms()
+
+        # Resolver cada ecuación individual
+        soluciones_individuales = []
+        for i, ecuacion_individual in enumerate(ecuaciones_individuales):
+            solucion_individual = ecuacion_individual / x**i
+            soluciones_individuales.append(solucion_individual)
+
+        # Construir la solución general a partir de las soluciones individuales
+        solucion_general = sum(soluciones_individuales)
+
+        # Mostrar el resumen paso a paso
+        resumen = "Paso a paso de la solución:\n"
+        resumen += "---------------------------\n"
+        resumen += "1. Expresar la ecuación diferencial en términos de la serie de potencias:\n"
+        resumen += pretty(ecuacion_series, use_unicode=True) + "\n"
+        resumen += "2. Obtener las ecuaciones para cada término de la serie:\n\n"
+        for i, ecuacion_individual in enumerate(ecuaciones_individuales):
+            resumen += "Término " + str(i + 1) + ": \n"
+            resumen += pretty(ecuacion_individual, use_unicode=True) + "\n\n"
+            resumen += "Solución: \n" 
+            resumen += pretty(soluciones_individuales[i]) + "\n\n"
+        resumen += "---------------------------\n"
+        resumen += "Solución general:\n"
+        resumen += pretty(solucion_general, use_unicode=True)
+
+        return resumen
+
+    def resolver_ed_homogenea_sustitucion(self, ecuacion):
+        x = symbols('x')
+        y = Function('y')(x)
+
+        #ecuacion = eval(eq)
+        
+        # Expresar la ecuación en forma normalizada
+        y_new = Function('y_new')(x)
+        ecuacion_normalizada = ecuacion.subs(y.diff(x), y_new)
+
+        # Resolver la ecuación normalizada
+        solucion = dsolve(ecuacion_normalizada)
+        
+        # Realizar la sustitución inversa y = exp(mx)
+        m = symbols('m')
+        sustitucion_inversa = solucion.subs(y_new, Function('C')(x) * pow(Function('E')(x), m*x))
+        solucion_final = sustitucion_inversa.subs(Function('C')(x), y)
+        
+        # Mostrar el resumen paso a paso
+        #return f'1. Expresar la ecuación en forma normalizada:<br>{ecuacion_normalizada}<br><br>2. Resolver la ecuación normalizada:<br>{solucion}<br><br>3. Realizar la sustitución inversa y = exp(mx):<br>{sustitucion_inversa}<br><br>Solución general:<br>{solucion_final}'
+        # Construir el resumen paso a paso como cadena de texto
+        resumen = "Paso a paso de la solución:\n"
+        resumen += "---------------------------\n"
+        resumen += "1. Expresar la ecuación en forma normalizada:\n"
+        resumen += pretty(ecuacion_normalizada, use_unicode=True) + "\n\n"
+        resumen += "2. Resolver la ecuación normalizada:\n"
+        resumen += pretty(solucion, use_unicode=True) + "\n\n"
+        resumen += "3. Realizar la sustitución inversa y = exp(mx):\n"
+        resumen += pretty(sustitucion_inversa, use_unicode=True) + "\n\n"
+        resumen += "---------------------------\n"
+        resumen += "Solución general:\n"
+        resumen += pretty(solucion_final, use_unicode=True) + "\n"
+
+        return resumen
+
     def is_differential(self, eq):
         if "diff" in eq:
             return True
@@ -248,42 +343,39 @@ class MainWindow(QWidget):
        eq = self.vectorizer.transform([self.eq])
        return self.model.predict(eq)[0]
 
-    def detect_homogeneity_degree(self, e):
-        # Detecta el grado de homogeneidad de la ecuación diferencial 'e'
-        # Devuelve el grado de homogeneidad como un número entero
-        # Contar el número de veces que aparece la variable 'x' en los términos de la ecuación
-        terms = e.split('+')  # Separar los términos de la ecuación
-        degree = 0
-        for term in terms:
-            if 'x' in term:
-                degree += term.count('x')
-        return degree
+    def detect_homogeneity_degree(self, eq):
+        x, y = symbols('x y')
+        ecuacion = eval(eq)
+        variables = set()
+        
+        for term in ecuacion.args:
+            variables.update(term.free_symbols)
+        grados = []
+        for variable in variables:
+            grados_variable = set()
+                
+            for term in ecuacion.args:
+                if variable in term.free_symbols:
+                    grados_variable.add(term.as_poly(variable).degree())
+                
+            grados.append(max(grados_variable))
+            
+        return max(grados)
 
-    def solve_homogeneous_equation(self, e, method):
-        # Resuelve la ecuación diferencial homogénea 'e' con el método 'method'
-        # Devuelve la solución de la ecuación como una cadena de texto
-        
-        x = sympy.symbols('x')  # Variable simbólica
-        
-        # Construir la ecuación diferencial en términos de la variable simbólica
-        equation = sympy.Eq(eval(e), 0)
-        
-        # Resolver la ecuación diferencial homogénea según el método seleccionado
-        if method == 'Sustitución de variables':
-            solution = sympy.dsolve(equation)
-        elif method == 'Transformada de Laplace':
-            solution = sympy.laplace_transform(equation, x, sympy.symbols('s'))[0]
-        elif method == 'Serie de potencias':
-            solution = sympy.series(equation.rhs, x)
-        else:
-            solution = None
-        
-        # Convertir la solución en una cadena de texto
-        if solution is not None:
-            solution = str(solution)
+    def solve_homogeneous_equation(self, eq, method):
+        x = symbols('x')
+        y = Function('y')(x)
+        eq = eval(eq)
+
+        if method == 'sustitución de variables':
+            solution = self.resolver_ed_homogenea_sustitucion(eq)
+        elif method == 'serie de potencias':
+            solution = self.resolver_ed_homogenea_serie_potencias(eq, self.order)
+        elif method == 'transformada de Laplace':
+            solution = self.resolver_ed_homogenea_laplace(Eq(eq, 0))
         else:
             solution = "No se encontró una solución para el método seleccionado"
-        
+                
         return solution
     
     def standar_eq(self, human_equation):
@@ -305,16 +397,26 @@ class MainWindow(QWidget):
         return human_equation
 
     def parse_equation(self, human_equation):
+        x = symbols('x')
+        y = symbols('y', cls=Function)(x)
+       
         human_equation = re.sub(r'e\*\*x|e\^x', 'exp(x)', human_equation)
         human_equation = re.sub(r'y\'\'\'', 'y.diff(x, x, x)', human_equation)
         human_equation = re.sub(r'y\'\'', 'y.diff(x, x)', human_equation)
         human_equation = re.sub(r'y\'', 'y.diff(x)', human_equation)
-        human_equation = re.sub(r'(\d+)', r'\1*', human_equation)
+
+        human_equation = re.sub(r'([xy])(\d+)', r'\1*\2', human_equation)
+        human_equation = re.sub(r'(\d+)([xy])', r'\1*\2', human_equation)
+        human_equation = re.sub(r'([xy])\'', r'\1.diff(x)', human_equation)
+        human_equation = re.sub(r'([xy])([xy])', r'\1*\2', human_equation)
+       
         human_equation = human_equation.replace("^", "**")
         human_equation = human_equation.replace("e", "E")
+       
         human_equation = re.sub(r'(\w)\^(\d+)\s*\*\s*\(\(d\^\2\)y\)/d\((\w)\^\2\)', r'\1.diff(\3)**\2 * y.diff(\3, \3)', human_equation)
-        human_equation = re.sub(r'(?<=[\dxy\)])-', '-1*', human_equation)
 
+        human_equation = re.sub(r'(?<=[\dxy\)])-', '-1*', human_equation)
+        
         if '=' in human_equation:
             sides = human_equation.split('=')
             sides[0] += ' - ' + '(' + sides[1].strip() + ')'
@@ -337,6 +439,12 @@ class MainWindow(QWidget):
         except (SyntaxError, TypeError, NameError):
             return False
 
+    def getEqSimbol(self, eq):
+        x = symbols('x')
+        y = symbols('y', cls=Function)(x)
+        eq = eval(eq)
+        return eq
+    
     def solve(self):
         # Lógica para resolver el problema con el método seleccionado
         method = self.selector_combobox.currentText()  # sustitución de variables, transformada de Laplace, serie de potencias
@@ -347,7 +455,7 @@ class MainWindow(QWidget):
         self.order = "No aplica"
         self.type = "No aplica"
         self.solution = f"Error: No se puede resolver esta ecuación {self.eq}"
-
+        self.degree = "No aplica"
         if eq:
             if self.is_differential(eq):
                 self.eq_contex = "Sí es una ecuación diferencial."
@@ -357,8 +465,8 @@ class MainWindow(QWidget):
                     self.order = f"{self.order}, no se pueden resolver ecuaciones de orden mayor a 3."
                 else:
                     if self.type == "homogénea":
-                        #degree = self.detect_homogeneity_degree(eq)
-                        #solution = self.solve_homogeneous_equation(eq, method)
+                        self.degree = self.detect_homogeneity_degree(eq)
+                        self.solution = self.solve_homogeneous_equation(eq, method)
                         self.show_solution_view()
                     else:
                         self.solution = "Error: No se pueden resolver ecuaciones heterogéneas."
