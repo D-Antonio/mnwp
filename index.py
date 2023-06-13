@@ -490,23 +490,17 @@ class MainWindow(QWidget):
                 
         return solution
     
-    def standar_eq(self, human_equation):
-        pattern = r'\(d\^(\d+)\)y/d\(x\^\1\)|dy/dx'
+    def standar_eq(self,equation):
+        pattern = r'd\*\*(\d+)\s*y\s*/\s*dx\*\*(\1+)\s*|dy/dx'
         def replace(match):
             if match.group(0) == 'dy/dx':
-                return 'y'
+                return "y'"
             else:
                 num_derivatives = int(match.group(1))
-                if num_derivatives == 1:
-                    return 'y'
-                elif num_derivatives == 2:
-                    return "y'"
-                elif num_derivatives == 3:
-                    return "y''"
-                elif num_derivatives >= 4:
-                    return "y'''"
-        human_equation = re.sub(pattern, replace, human_equation)
-        return human_equation
+                return "y" + "'" * num_derivatives
+        # Reemplazar la notación de derivadas en la ecuación
+        equation = re.sub(pattern, replace, equation)
+        return equation
 
     def parse_equation(self, human_equation):
         x = symbols('x')
