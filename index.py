@@ -17,11 +17,20 @@ import csv
 
 class MainWindow(QWidget):
     text = ""
+    creditos = ""
+    info = ""
+    link = ""
     vectorizer = CountVectorizer()
 
     def __init__(self):
         super().__init__()
         ecuaciones = []
+        with open("creditos.html", "r", encoding="utf-8") as file:
+            self.creditos = file.read()
+        with open("info.html", "r", encoding="utf-8") as file:
+            self.info = file.read()
+        with open("link.txt", "r", encoding="utf-8") as file:
+            self.link = file.read()
         with open('eq.csv', 'r') as csvfile:
             reader = csv.reader(csvfile, delimiter=',')
             next(reader)  # Saltar la primera fila (los encabezados)
@@ -104,22 +113,54 @@ class MainWindow(QWidget):
 
         self.input_line_edit.setText(self.text)
 
+        home_view.setFixedHeight(448)
+        home_view.setFixedWidth(639)
+
         # Mostrar la vista principal
         self.stacked_widget.setCurrentWidget(home_view)
 
     def show_tutorial_view(self):
-        webbrowser.open("https://www.youtube.com/watch?v=lo1PzjuGxFg")
+        webbrowser.open(self.link)
 
     def show_info_view(self):
         text = self.input_line_edit.text()
         self.text = text
         info_view = QWidget()
         info_view.setStyleSheet("background-color: #FFFBFA;")
+        info_view.setFixedSize(639, 448)  # Establecer tamaño fijo
+
         layout = QVBoxLayout()
 
         # Contenido de la vista de información
-        info_label = QLabel("Aquí va la información de la aplicación.")
-        layout.addWidget(info_label, alignment=QtCore.Qt.AlignCenter)
+        info_scroll_area = QScrollArea() 
+        info_scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        info_scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        info_scroll_area.setWidgetResizable(True)
+
+        info_label = QLabel(f"{self.info}")
+        # info_label.setAlignment(Qt.AlignCenter)
+        info_label.setAlignment(Qt.AlignTop | Qt.AlignLeft)
+        info_label.setWordWrap(True)
+        info_scroll_area.setWidget(info_label)
+
+        info_scroll_area.setStyleSheet(
+            "QScrollBar:vertical {"
+            "    width: 10px;"
+            "    background-color: #F0F0F0;"
+            "}"
+            "QScrollBar::handle:vertical {"
+            "    background-color: #CCCCCC;"
+            "}"
+            "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {"
+            "    height: 0px;"
+            "}"
+            "QScrollArea {"
+            "    padding: 0;"
+            "    border: 0;"
+            "}"
+        )
+
+        layout.addWidget(info_scroll_area)
 
         # Botón de regresar
         back_button = QPushButton("Regresar")
@@ -137,11 +178,38 @@ class MainWindow(QWidget):
         self.text = text
         credits_view = QWidget()
         credits_view.setStyleSheet("background-color: #FFFBFA;")
+        credits_view.setFixedSize(639, 448)
         layout = QVBoxLayout()
 
         # Contenido de la vista de créditos
-        credits_label = QLabel("Aquí van los créditos de la aplicación.")
-        layout.addWidget(credits_label, alignment=QtCore.Qt.AlignCenter)
+        credits_scroll_area = QScrollArea() 
+        credits_scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        credits_scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        credits_scroll_area.setWidgetResizable(True)
+
+        credits_scroll_area.setStyleSheet(
+            "QScrollBar:vertical {"
+            "    width: 10px;"
+            "    background-color: #F0F0F0;"
+            "}"
+            "QScrollBar::handle:vertical {"
+            "    background-color: #CCCCCC;"
+            "}"
+            "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {"
+            "    height: 0px;"
+            "}"
+            "QScrollArea {"
+            "    padding: 0;"
+            "    border: 0;"
+            "}"
+        )
+
+        credits_label = QLabel(f"{self.creditos}")
+        credits_label.setAlignment(Qt.AlignTop | Qt.AlignLeft)
+        credits_label.setWordWrap(True)
+
+        credits_scroll_area.setWidget(credits_label)
+        layout.addWidget(credits_scroll_area)
 
         # Botón de regresar
         back_button = QPushButton("Regresar")
