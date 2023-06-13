@@ -1,6 +1,7 @@
-from PyQt5.QtWidgets import QApplication, QPushButton, QHBoxLayout, QWidget, QLabel, QLineEdit, QVBoxLayout, QComboBox, QStackedWidget, QTextEdit
+from PyQt5.QtWidgets import QApplication, QPushButton, QHBoxLayout, QWidget, QLabel, QLineEdit, QVBoxLayout, QComboBox, QStackedWidget, QTextEdit, QScrollArea
 from PyQt5.QtGui import QColor
 from PyQt5.QtGui import QFont
+from PyQt5.QtCore import Qt, QSize
 from PyQt5 import QtCore
 import webbrowser
 import sympy as sp
@@ -164,7 +165,7 @@ class MainWindow(QWidget):
         # Título
         title_label = QLabel("Solución")
         title_label.setStyleSheet("color: #BF1363; font-size: 24px; font-weight: bold;")
-        title_label.setAlignment(QtCore.Qt.AlignCenter)
+        title_label.setAlignment(Qt.AlignCenter)
 
         # Información de la ecuación
         equation_label = QLabel(f"Ecuación: {self.eq}\n{self.eq_contex}")
@@ -175,11 +176,44 @@ class MainWindow(QWidget):
         details_label.setStyleSheet("color: black; font-size: 16px;")
 
         # Solución
-        solution_label = QLabel(f"Resultado de la ecuación por {method}\n\n{self.solution}")
-        solution_label.setStyleSheet("color: black; font-size: 16px;")
-        font = QFont()
+        title_solution = QLabel(f"Resultado de la ecuación por {method}")
+        title_solution.setStyleSheet("color: black; font-size: 16px;")
+        
+        solution_scroll_area = QScrollArea()
+        #solution_scroll_area.setWidgetResizable(True)
+        solution_scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        solution_scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+        solution_label = QLabel(f"{self.solution}")
+        solution_label.setStyleSheet("color: black; font-size: 16px; background-color: #FFFFFF; padding: 0;")
+        solution_label.setAlignment(Qt.AlignTop)
+        solution_label.setWordWrap(True)
+        font = solution_label.font()
         font.setFamily("Consolas")
         solution_label.setFont(font)
+        solution_scroll_area.setWidget(solution_label)
+        solution_scroll_area.setFixedHeight(200)
+        solution_scroll_area.setContentsMargins(0, 0, 0, 0)
+        solution_scroll_area.setStyleSheet(
+            "QScrollBar:vertical {"
+            "    width: 10px;"
+            "    background-color: #F0F0F0;"
+            "}"
+            "QScrollBar::handle:vertical {"
+            "    background-color: #CCCCCC;"
+            "}"
+            "QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {"
+            "    height: 0px;"
+            "}"
+            "QScrollArea {"
+            "    padding: 0;"
+            "    border: 0;"
+            "}"
+        )
+        # Obtener el tamaño preferido de solution_label
+        solution_label_size = solution_label.sizeHint()
+        # Ajustar el ancho de solution_scroll_area
+        solution_scroll_area.setFixedWidth(solution_label_size.width() + 10)
 
         # Botón Regresar
         back_button = QPushButton("Regresar")
@@ -192,8 +226,8 @@ class MainWindow(QWidget):
         layout.addWidget(title_label)
         layout.addWidget(equation_label)
         layout.addWidget(details_label)
-        layout.addWidget(solution_label)
-        #layout.addWidget(solution_text_edit)
+        layout.addWidget(title_solution)
+        layout.addWidget(solution_scroll_area)
         layout.addWidget(back_button)
         solution_view.setLayout(layout)
         self.stacked_widget.addWidget(solution_view)
