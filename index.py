@@ -28,19 +28,19 @@ class MainWindow(QWidget):
         super().__init__()
         ruta_ejecutable = os.path.dirname(sys.executable)
         ecuaciones = []
-        with open(os.path.join(ruta_ejecutable, "creditos.html"), "r", encoding="utf-8") as file:
+        with open("creditos.html", "r", encoding="utf-8") as file:
             self.creditos = file.read()
-        with open(os.path.join(ruta_ejecutable, "info.html"), "r", encoding="utf-8") as file:
+        with open("info.html", "r", encoding="utf-8") as file:
             self.info = file.read()
-        with open(os.path.join(ruta_ejecutable, "link.txt"), "r", encoding="utf-8") as file:
+        with open("link.txt", "r", encoding="utf-8") as file:
             self.link = file.read()
-        with open(os.path.join(ruta_ejecutable, 'eq.csv'), 'r') as csvfile:
+        with open('eq.csv', 'r') as csvfile:
             reader = csv.reader(csvfile, delimiter=',')
             next(reader)  # Saltar la primera fila (los encabezados)
             for row in reader:
                 ecuaciones.append(row)
         self.vectorizer.fit_transform([x[0] for x in ecuaciones])
-        self.model = load(os.path.join(ruta_ejecutable, 'modelo_ecuaciones.joblib'))
+        self.model = load('./modelo_ecuaciones.joblib')
 
         self.setWindowTitle("JEdyCalc")
         self.stacked_widget = QStackedWidget()
