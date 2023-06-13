@@ -14,6 +14,8 @@ import math
 from sklearn.feature_extraction.text import CountVectorizer
 from joblib import load
 import csv
+import os
+import sys
 
 class MainWindow(QWidget):
     text = ""
@@ -24,20 +26,21 @@ class MainWindow(QWidget):
 
     def __init__(self):
         super().__init__()
+        ruta_ejecutable = os.path.dirname(sys.executable)
         ecuaciones = []
-        with open("creditos.html", "r", encoding="utf-8") as file:
+        with open(os.path.join(ruta_ejecutable, "creditos.html"), "r", encoding="utf-8") as file:
             self.creditos = file.read()
-        with open("info.html", "r", encoding="utf-8") as file:
+        with open(os.path.join(ruta_ejecutable, "info.html"), "r", encoding="utf-8") as file:
             self.info = file.read()
-        with open("link.txt", "r", encoding="utf-8") as file:
+        with open(os.path.join(ruta_ejecutable, "link.txt"), "r", encoding="utf-8") as file:
             self.link = file.read()
-        with open('eq.csv', 'r') as csvfile:
+        with open(os.path.join(ruta_ejecutable, 'eq.csv'), 'r') as csvfile:
             reader = csv.reader(csvfile, delimiter=',')
             next(reader)  # Saltar la primera fila (los encabezados)
             for row in reader:
                 ecuaciones.append(row)
         self.vectorizer.fit_transform([x[0] for x in ecuaciones])
-        self.model = load('./modelo_ecuaciones.joblib')
+        self.model = load(os.path.join(ruta_ejecutable, 'modelo_ecuaciones.joblib'))
 
         self.setWindowTitle("JEdyCalc")
         self.stacked_widget = QStackedWidget()
@@ -113,8 +116,8 @@ class MainWindow(QWidget):
 
         self.input_line_edit.setText(self.text)
 
-        home_view.setFixedHeight(448)
-        home_view.setFixedWidth(639)
+        home_view.setFixedHeight(440)
+        home_view.setFixedWidth(800)
 
         # Mostrar la vista principal
         self.stacked_widget.setCurrentWidget(home_view)
@@ -127,7 +130,7 @@ class MainWindow(QWidget):
         self.text = text
         info_view = QWidget()
         info_view.setStyleSheet("background-color: #FFFBFA;")
-        info_view.setFixedSize(639, 448)  # Establecer tamaño fijo
+        info_view.setFixedSize(800, 440)  # Establecer tamaño fijo
 
         layout = QVBoxLayout()
 
@@ -178,7 +181,7 @@ class MainWindow(QWidget):
         self.text = text
         credits_view = QWidget()
         credits_view.setStyleSheet("background-color: #FFFBFA;")
-        credits_view.setFixedSize(639, 448)
+        credits_view.setFixedSize(800, 440)
         layout = QVBoxLayout()
 
         # Contenido de la vista de créditos
@@ -255,6 +258,7 @@ class MainWindow(QWidget):
         solution_label = QLabel(f"{self.solution}")
         solution_label.setStyleSheet("color: black; font-size: 16px; background-color: #FFFFFF; padding: 0;")
         solution_label.setAlignment(Qt.AlignTop)
+        solution_label.setFixedWidth(760)
         solution_label.setWordWrap(True)
         font = solution_label.font()
         font.setFamily("Consolas")
@@ -279,9 +283,8 @@ class MainWindow(QWidget):
             "}"
         )
         # Obtener el tamaño preferido de solution_label
-        solution_label_size = solution_label.sizeHint()
         # Ajustar el ancho de solution_scroll_area
-        solution_scroll_area.setFixedWidth(solution_label_size.width() + 10)
+        solution_scroll_area.setFixedWidth(770)
 
         # Botón Regresar
         back_button = QPushButton("Regresar")
