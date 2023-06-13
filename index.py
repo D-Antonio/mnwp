@@ -5,7 +5,7 @@ from PyQt5.QtCore import Qt, QSize
 from PyQt5 import QtCore
 import webbrowser
 import sympy as sp
-from sympy import symbols, diff, Function, pretty, Eq, sympify, sin, latex, Derivative, LaplaceTransform, cos, exp, log, E, Symbol, dsolve, series, O, collect, factorial, pprint
+from sympy import symbols, diff, Function, pretty, Eq, sympify, sin, apart, latex, Derivative, LaplaceTransform, cos, exp, log, E, Symbol, dsolve, series, O, collect, factorial, pprint
 from sympy.parsing.sympy_parser import parse_expr
 from sympy.solvers.ode import dsolve
 import numpy as np
@@ -337,17 +337,14 @@ class MainWindow(QWidget):
     ##############
 
     def resolver_ed_homogenea_laplace(self, ecuacion):
-        #x = symbols('x')
         s, t = symbols('s t')
         y = Function('y')(t)
-
-        # ecuacion = Eq(ecuacion, 0)
-
         # Aplicar la transformada de Laplace a ambos lados de la ecuación
-        transformada_ecuacion = LaplaceTransform(ecuacion.lhs, t, s).doit()[0] - LaplaceTransform(ecuacion.rhs, t, s).doit()[0]
+        transformada_ecuacion = apart(LaplaceTransform(ecuacion.lhs, t, s).doit() - LaplaceTransform(ecuacion.rhs, t, s).doit(), s)
 
         # Resolver la ecuación transformada
         solucion_transformada = y * transformada_ecuacion
+
 
         # Mostrar el resumen paso a paso
         resumen = "Paso a paso de la solución:\n"
@@ -445,8 +442,8 @@ class MainWindow(QWidget):
         for term in terms:
             if "y" in term:
                 degree = term.count("'")
-            if degree > max_degree:
-                max_degree = degree
+                if degree > max_degree:
+                    max_degree = degree
         return max_degree
 
     def is_homogeneous(self):
@@ -456,21 +453,23 @@ class MainWindow(QWidget):
     def detect_homogeneity_degree(self, eq):
         x, y = symbols('x y')
         ecuacion = eval(eq)
-        variables = set()
-        
-        for term in ecuacion.args:
-            variables.update(term.free_symbols)
+        variables = ecuacion.free_symbols
         grados = []
+        
         for variable in variables:
             grados_variable = set()
-                
+            
             for term in ecuacion.args:
                 if variable in term.free_symbols:
                     grados_variable.add(term.as_poly(variable).degree())
-                
-            grados.append(max(grados_variable))
             
-        return max(grados)
+            if grados_variable:
+                grados.append(max(grados_variable))
+        
+        if grados:
+            return max(grados)
+        else:
+            return 0  # Si no se encontraron variables con grados definidos, asumimos grado 0
 
     def solve_homogeneous_equation(self, eq, method):
         x = symbols('x')
