@@ -505,32 +505,23 @@ class MainWindow(QWidget):
     def parse_equation(self, human_equation):
         x = symbols('x')
         y = symbols('y', cls=Function)(x)
-       
-        human_equation = re.sub(r'e\*\*x|e\^x', 'exp(x)', human_equation)
-        human_equation = re.sub(r'y\'\'\'', 'y.diff(x, x, x)', human_equation)
-        human_equation = re.sub(r'y\'\'', 'y.diff(x, x)', human_equation)
-        human_equation = re.sub(r'y\'', 'y.diff(x)', human_equation)
 
+        human_equation = re.sub(r"'+", lambda x: ".diff(x" + ", x" * (len(x.group()) - 1) + ")", human_equation)
+        human_equation = re.sub(r'e\*\*x|e\^x', 'exp(x)', human_equation)
         human_equation = re.sub(r'([xy])(\d+)', r'\1*\2', human_equation)
         human_equation = re.sub(r'(\d+)([xy])', r'\1*\2', human_equation)
         human_equation = re.sub(r'([xy])\'', r'\1.diff(x)', human_equation)
         human_equation = re.sub(r'([xy])([xy])', r'\1*\2', human_equation)
-       
         human_equation = human_equation.replace("^", "**")
         human_equation = human_equation.replace("e", "E")
-       
         human_equation = re.sub(r'(\w)\^(\d+)\s*\*\s*\(\(d\^\2\)y\)/d\((\w)\^\2\)', r'\1.diff(\3)**\2 * y.diff(\3, \3)', human_equation)
-
         human_equation = re.sub(r'(?<=[\dxy\)])-', '-1*', human_equation)
-        
         if '=' in human_equation:
             sides = human_equation.split('=')
             sides[0] += ' - ' + '(' + sides[1].strip() + ')'
             human_equation = sides[0]
-
         if human_equation.endswith("*)"):
             human_equation = human_equation[:-2] + ")"
-        
         return human_equation
     
     def is_equation(self, text):
@@ -573,7 +564,6 @@ class MainWindow(QWidget):
                     if self.type == "homogénea":
                         self.degree = self.detect_homogeneity_degree(eq)
                         self.solution = self.solve_homogeneous_equation(eq, method)
-                        self.show_solution_view()
                     else:
                         self.solution = "Error: No se pueden resolver ecuaciones heterogéneas."
             else:
