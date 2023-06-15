@@ -60,36 +60,36 @@ class MainWindow(QWidget):
         # Botones superiores
         buttons_layout = QHBoxLayout()
         info_button = QPushButton("Información")
-        info_button.setStyleSheet("background-color: #00BD9D; color: white;")
+        info_button.setStyleSheet("background-color: #00BD9D; color: white; font-size: 24px; font-weight: bold;")
         tutorial_button = QPushButton("Tutorial")
-        tutorial_button.setStyleSheet("background-color: #00BD9D; color: white;")
+        tutorial_button.setStyleSheet("background-color: #00BD9D; color: white; font-size: 24px; font-weight: bold;")
         credits_button = QPushButton("Créditos")
-        credits_button.setStyleSheet("background-color: #00BD9D; color: white;")
+        credits_button.setStyleSheet("background-color: #00BD9D; color: white; font-size: 24px; font-weight: bold;")
         buttons_layout.addWidget(credits_button)
         buttons_layout.addWidget(tutorial_button)
         buttons_layout.addWidget(info_button)
 
         # Título
         title_label = QLabel("JEdyCalc")
-        title_label.setStyleSheet("color: #BF1363; font-size: 24px; font-weight: bold;")
+        title_label.setStyleSheet("color: #BF1363; font-size: 32px; font-weight: bold;")
         title_label.setAlignment(QtCore.Qt.AlignCenter)
 
         # Input
         self.input_line_edit = QLineEdit()
-        self.input_line_edit.setStyleSheet("background-color: white; border: 1px solid #ccc; padding: 5px; ")
+        self.input_line_edit.setStyleSheet("background-color: white; border: 1px solid #ccc; padding: 5px; font-size: 24px;")
 
         # Selector
         self.selector_combobox = QComboBox()
         self.selector_combobox.addItem("sustitución de variables")
         self.selector_combobox.addItem("serie de potencias")
         self.selector_combobox.addItem("transformada de Laplace")
-        self.selector_combobox.setStyleSheet("background-color: white;color: black; border: 1px solid #ccc;  padding: 5px; selection-background-color: #00BD9D;")
+        self.selector_combobox.setStyleSheet("background-color: white;color: black; border: 1px solid #ccc; font-size: 24px; padding: 5px; selection-background-color: #00BD9D;")
         self.selector_combobox.setSizeAdjustPolicy(QComboBox.AdjustToContents)
         self.selector_combobox.view().setStyleSheet("color: black;")
 
         # Botón Resolver
         solve_button = QPushButton("Resolver")
-        solve_button.setStyleSheet("background-color: #00BD9D; color: white;")
+        solve_button.setStyleSheet("background-color: #00BD9D; color: white; font-size: 24px; font-weight: bold;")
 
         # Agregar widgets al diseño
         layout.addLayout(buttons_layout)
@@ -106,7 +106,7 @@ class MainWindow(QWidget):
         credits_button.clicked.connect(self.show_credits_view)
 
         def disable_solve_button():
-            solve_button.setStyleSheet("background-color: #ffc501; color: white;")
+            solve_button.setStyleSheet("background-color: #ffc501; color: white; font-size: 24px;")
             solve_button.setEnabled(False)
             solve_button.setText("Cargando...")
             QApplication.processEvents()
@@ -116,8 +116,7 @@ class MainWindow(QWidget):
 
         self.input_line_edit.setText(self.text)
 
-        home_view.setFixedHeight(440)
-        home_view.setFixedWidth(800)
+        home_view.setFixedSize(800, 520)
 
         # Mostrar la vista principal
         self.stacked_widget.setCurrentWidget(home_view)
@@ -130,9 +129,14 @@ class MainWindow(QWidget):
         self.text = text
         info_view = QWidget()
         info_view.setStyleSheet("background-color: #FFFBFA;")
-        info_view.setFixedSize(800, 440)  # Establecer tamaño fijo
-
+        info_view.setFixedSize(800, 520)  # Establecer tamaño fijo
         layout = QVBoxLayout()
+
+        # Título
+        title_label = QLabel("Información")
+        title_label.setStyleSheet("color: #BF1363; font-size: 32px; font-weight: bold;")
+        title_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(title_label)
 
         # Contenido de la vista de información
         info_scroll_area = QScrollArea() 
@@ -167,8 +171,8 @@ class MainWindow(QWidget):
 
         # Botón de regresar
         back_button = QPushButton("Regresar")
-        back_button.setStyleSheet("background-color: #00BD9D; color: white;")
-        layout.addWidget(back_button, alignment=QtCore.Qt.AlignCenter)
+        back_button.setStyleSheet("background-color: #00BD9D; color: white; font-size: 24px; font-weight: bold;")
+        layout.addWidget(back_button)
         back_button.clicked.connect(self.show_home_view)
         info_view.setLayout(layout)
         self.stacked_widget.addWidget(info_view)
@@ -181,8 +185,14 @@ class MainWindow(QWidget):
         self.text = text
         credits_view = QWidget()
         credits_view.setStyleSheet("background-color: #FFFBFA;")
-        credits_view.setFixedSize(800, 440)
+        credits_view.setFixedSize(800, 520)
         layout = QVBoxLayout()
+
+        # Título
+        title_label = QLabel("Créditos")
+        title_label.setStyleSheet("color: #BF1363; font-size: 32px; font-weight: bold;")
+        title_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(title_label)
 
         # Contenido de la vista de créditos
         credits_scroll_area = QScrollArea() 
@@ -216,8 +226,8 @@ class MainWindow(QWidget):
 
         # Botón de regresar
         back_button = QPushButton("Regresar")
-        back_button.setStyleSheet("background-color: #00BD9D; color: white;")
-        layout.addWidget(back_button, alignment=QtCore.Qt.AlignCenter)
+        back_button.setStyleSheet("background-color: #00BD9D; color: white; font-size: 24px; font-weight: bold;")
+        layout.addWidget(back_button)
         back_button.clicked.connect(self.show_home_view)
         credits_view.setLayout(layout)
         self.stacked_widget.addWidget(credits_view)
@@ -235,20 +245,24 @@ class MainWindow(QWidget):
 
         # Título
         title_label = QLabel("Solución")
-        title_label.setStyleSheet("color: #BF1363; font-size: 24px; font-weight: bold;")
+        title_label.setStyleSheet("color: #BF1363; font-size: 32px; font-weight: bold;")
         title_label.setAlignment(Qt.AlignCenter)
 
         # Información de la ecuación
         equation_label = QLabel(f"Ecuación: {self.eq}\n{self.eq_contex}")
-        equation_label.setStyleSheet("color: black; font-size: 16px;")
+        equation_label.setStyleSheet("color: black; font-size: 24px;")
 
         # Detalles de la ecuación
-        details_label = QLabel(f"* Orden: {self.order}\n* Tipo: {self.type}\n* Grado de homogeneidad: {self.degree}")
-        details_label.setStyleSheet("color: black; font-size: 16px;")
+        details_label = QLabel("<ul>" 
+                                    f"<li> Orden: {self.order} </li>" 
+                                    f"<li> Tipo: {self.type} </li>" 
+                                    f"<li> Grado de homogeneidad: {self.degree}</li>"
+                                "</ul>")
+        details_label.setStyleSheet("color: black; font-size: 24px;")
 
         # Solución
         title_solution = QLabel(f"Resultado de la ecuación por {method}")
-        title_solution.setStyleSheet("color: black; font-size: 16px;")
+        title_solution.setStyleSheet("color: black; font-size: 24px;")
         
         solution_scroll_area = QScrollArea()
         #solution_scroll_area.setWidgetResizable(True)
@@ -256,7 +270,7 @@ class MainWindow(QWidget):
         solution_scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         solution_label = QLabel(f"{self.solution}")
-        solution_label.setStyleSheet("color: black; font-size: 16px; background-color: #FFFFFF; padding: 0;")
+        solution_label.setStyleSheet("color: #444444; font-size: 16px; background-color: #FFFFFF; padding: 0;")
         solution_label.setAlignment(Qt.AlignTop)
         solution_label.setFixedWidth(760)
         solution_label.setWordWrap(True)
@@ -288,7 +302,7 @@ class MainWindow(QWidget):
 
         # Botón Regresar
         back_button = QPushButton("Regresar")
-        back_button.setStyleSheet("background-color: #00BD9D; color: white;")
+        back_button.setStyleSheet("background-color: #00BD9D; color: white; font-size: 24px; font-weight: bold;")
 
         # Conexión del botón Regresar
         back_button.clicked.connect(self.show_home_view)
@@ -315,7 +329,7 @@ class MainWindow(QWidget):
 
         # Título
         title_label = QLabel("Error")
-        title_label.setStyleSheet("color: #BF1363; font-size: 24px; font-weight: bold;")
+        title_label.setStyleSheet("color: #BF1363; font-size: 32px; font-weight: bold;")
         title_label.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(title_label)
 
@@ -325,8 +339,8 @@ class MainWindow(QWidget):
         
         # Botón de regresar
         back_button = QPushButton("Regresar")
-        back_button.setStyleSheet("background-color: #00BD9D; color: white;")
-        layout.addWidget(back_button, alignment=QtCore.Qt.AlignCenter)
+        back_button.setStyleSheet("background-color: #00BD9D; color: white; font-size: 24px; font-weight: bold;")
+        layout.addWidget(back_button)
         back_button.clicked.connect(self.show_home_view)
         error_view.setLayout(layout)
         self.stacked_widget.addWidget(error_view)
