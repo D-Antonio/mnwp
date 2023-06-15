@@ -34,3 +34,7 @@ Crear el archivo .exe
 ```bash
 pyinstaller ecuaciones_diferenciales.spec 
 ```
+# con librerias
+~~~ bash
+pyinstaller --name=ecuaciones_diferenciales --onefile --hidden-import=PyQt5 --hidden-import=PyQt5.QtWidgets --hidden-import=PyQt5.QtGui --hidden-import=PyQt5.QtCore --hidden-import=webbrowser --hidden-import=sympy --hidden-import=sympy.parsing.sympy_parser --hidden-import=numpy --hidden-import=re --hidden-import=csv --hidden-import=math --hidden-import=sklearn.feature_extraction.text --hidden-import=joblib --hidden-import=os --hidden-import=sys --add-data="eq.csv;." --add-data="modelo_ecuaciones.joblib;." index.py
+~~~
