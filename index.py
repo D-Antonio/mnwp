@@ -41,7 +41,7 @@ class MainWindow(QWidget):
                 ecuaciones.append(row)
         self.vectorizer.fit_transform([x[0] for x in ecuaciones])
         self.model = load('./modelo_ecuaciones.joblib')
-
+        
         self.setWindowTitle("JEdyCalc")
         self.stacked_widget = QStackedWidget()
         self.layout = QVBoxLayout(self)
@@ -514,6 +514,7 @@ class MainWindow(QWidget):
                 return "y" + "'" * num_derivatives
         # Reemplazar la notación de derivadas en la ecuación
         equation = re.sub(pattern, replace, equation)
+        print(equation)
         return equation
 
     def parse_equation(self, human_equation):
@@ -526,6 +527,7 @@ class MainWindow(QWidget):
         human_equation = re.sub(r'(\d+)([xy])', r'\1*\2', human_equation)
         human_equation = re.sub(r'([xy])\'', r'\1.diff(x)', human_equation)
         human_equation = re.sub(r'([xy])([xy])', r'\1*\2', human_equation)
+        human_equation = human_equation.replace("–", "-")
         human_equation = human_equation.replace("^", "**")
         human_equation = human_equation.replace("e", "E")
         human_equation = re.sub(r'(\w)\^(\d+)\s*\*\s*\(\(d\^\2\)y\)/d\((\w)\^\2\)', r'\1.diff(\3)**\2 * y.diff(\3, \3)', human_equation)
@@ -572,14 +574,14 @@ class MainWindow(QWidget):
                 self.eq_contex = "Sí es una ecuación diferencial."
                 self.order = self.detect_order(self.eq)
                 self.type = self.is_homogeneous()
-                if self.order > 3:
-                    self.order = f"{self.order}, no se pueden resolver ecuaciones de orden mayor a 3."
-                else:
-                    if self.type == "homogénea":
-                        self.degree = self.detect_homogeneity_degree(eq)
-                        self.solution = self.solve_homogeneous_equation(eq, method)
+                if self.type == "homogénea":
+                    self.degree = self.detect_homogeneity_degree(eq)
+                    if self.order > 3:
+                        self.order = f"{self.order}, no se pueden resolver ecuaciones de orden mayor a 3."
                     else:
-                        self.solution = "Error: No se pueden resolver ecuaciones heterogéneas."
+                        self.solution = self.solve_homogeneous_equation(eq, method)
+                else:
+                    self.solution = "Error: No se pueden resolver ecuaciones heterogéneas."
             else:
                 self.eq_contex = "Error: La ecuación no es diferencial."
             self.show_solution_view()
