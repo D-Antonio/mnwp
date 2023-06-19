@@ -267,13 +267,13 @@ class MainWindow(QWidget):
         solution_scroll_area = QScrollArea()
         #solution_scroll_area.setWidgetResizable(True)
         solution_scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        solution_scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-
+        solution_scroll_area.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        # print(self.solution)
         solution_label = QLabel(f"{self.solution}")
-        solution_label.setStyleSheet("color: #444444; font-size: 16px; background-color: #FFFFFF; padding: 0;")
+        solution_label.setStyleSheet("color: #444444; font-size: 16px; background-color: #FFFFFF; padding: 10px;")
         solution_label.setAlignment(Qt.AlignTop)
-        solution_label.setFixedWidth(760)
-        solution_label.setWordWrap(True)
+        solution_label.setMinimumWidth(760)
+        #solution_label.setWordWrap(True)
         font = solution_label.font()
         font.setFamily("Consolas")
         solution_label.setFont(font)
@@ -281,6 +281,16 @@ class MainWindow(QWidget):
         solution_scroll_area.setFixedHeight(200)
         solution_scroll_area.setContentsMargins(0, 0, 0, 0)
         solution_scroll_area.setStyleSheet(
+            "QScrollBar:horizontal {"
+            "    height: 10px;"
+            "    background-color: #F0F0F0;"
+            "}"
+            "QScrollBar::handle:horizontal {"
+            "    background-color: #CCCCCC;"
+            "}"
+            "QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {"
+            "    width: 0px;"
+            "}"
             "QScrollBar:vertical {"
             "    width: 10px;"
             "    background-color: #F0F0F0;"
@@ -367,9 +377,9 @@ class MainWindow(QWidget):
         resumen = "Paso a paso de la solución:\n"
         resumen += "---------------------------\n"
         resumen += "1. Aplicar la transformada de Laplace a ambos lados de la ecuación:\n\n"
-        resumen += pretty(transformada_ecuacion, use_unicode=True) + "\n\n\n"
+        resumen += pretty(transformada_ecuacion, use_unicode=True, wrap_line=False) + "\n\n\n"
         resumen += "2. Resolver la ecuación transformada:\n\n"
-        resumen += pretty(solucion_transformada, use_unicode=True)
+        resumen += pretty(solucion_transformada, use_unicode=True, wrap_line=False)
 
         return resumen
 
@@ -399,16 +409,16 @@ class MainWindow(QWidget):
         resumen = "Paso a paso de la solución:\n"
         resumen += "---------------------------\n"
         resumen += "1. Expresar la ecuación diferencial en términos de la serie de potencias:\n"
-        resumen += pretty(ecuacion_series, use_unicode=True) + "\n"
+        resumen += pretty(ecuacion_series, use_unicode=True, wrap_line=False) + "\n"
         resumen += "2. Obtener las ecuaciones para cada término de la serie:\n\n"
         for i, ecuacion_individual in enumerate(ecuaciones_individuales):
             resumen += "Término " + str(i + 1) + ": \n"
-            resumen += pretty(ecuacion_individual, use_unicode=True) + "\n\n"
+            resumen += pretty(ecuacion_individual, use_unicode=True, wrap_line=False) + "\n\n"
             resumen += "Solución: \n" 
             resumen += pretty(soluciones_individuales[i]) + "\n\n"
         resumen += "---------------------------\n"
         resumen += "Solución general:\n"
-        resumen += pretty(solucion_general, use_unicode=True)
+        resumen += pretty(solucion_general, use_unicode=True, wrap_line=False)
 
         return resumen
 
@@ -436,14 +446,14 @@ class MainWindow(QWidget):
         resumen = "Paso a paso de la solución:\n"
         resumen += "---------------------------\n"
         resumen += "1. Expresar la ecuación en forma normalizada:\n"
-        resumen += pretty(ecuacion_normalizada, use_unicode=True) + "\n\n"
+        resumen += pretty(ecuacion_normalizada, use_unicode=True, wrap_line=False) + "\n\n"
         resumen += "2. Resolver la ecuación normalizada:\n"
-        resumen += pretty(solucion, use_unicode=True) + "\n\n"
+        resumen += pretty(solucion, use_unicode=True, wrap_line=False) + "\n\n"
         resumen += "3. Realizar la sustitución inversa y = exp(mx):\n"
-        resumen += pretty(sustitucion_inversa, use_unicode=True) + "\n\n"
+        resumen += pretty(sustitucion_inversa, use_unicode=True, wrap_line=False) + "\n\n"
         resumen += "---------------------------\n"
         resumen += "Solución general:\n"
-        resumen += pretty(solucion_final, use_unicode=True) + "\n"
+        resumen += pretty(solucion_final, use_unicode=True, wrap_line=False) + "\n"
 
         return resumen
 
@@ -514,7 +524,7 @@ class MainWindow(QWidget):
                 return "y" + "'" * num_derivatives
         # Reemplazar la notación de derivadas en la ecuación
         equation = re.sub(pattern, replace, equation)
-        print(equation)
+        # print(equation)
         return equation
 
     def parse_equation(self, human_equation):
